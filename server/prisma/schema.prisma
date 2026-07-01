@@ -20,22 +20,52 @@ model Category {
 }
 
 model Product {
-  id            String   @id
+  id            String      @id
   name          String
   categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
+  category      Category    @relation(fields: [categoryId], references: [id])
   material      String
   price         Int
   originalPrice Int?
-  rating        Float    @default(0)
-  ratingCount   Int      @default(0)
+  rating        Float       @default(0)
+  ratingCount   Int         @default(0)
   badge         String?
   image         String
   imageHover    String?
-  bestseller    Boolean  @default(false)
-  newArrival    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  bestseller    Boolean     @default(false)
+  newArrival    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  setProducts   SetProduct[]
 
   @@index([categoryId])
+}
+
+model ProductSet {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  image       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  setProducts SetProduct[]
+}
+
+model SetProduct {
+  setId     String
+  productId String
+  order     Int        @default(0)
+  set       ProductSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([setId, productId])
+  @@index([productId])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
 }
