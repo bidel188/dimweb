@@ -9,11 +9,11 @@ categoriesRouter.get('/', async (req, res) => {
 })
 
 categoriesRouter.post('/', async (req, res) => {
-  const { id, name, image } = req.body
-  if (!id || !name || !image) {
-    return res.status(400).json({ error: 'id, name, image là bắt buộc' })
+  const { name, image } = req.body
+  if (!name || !image) {
+    return res.status(400).json({ error: 'name, image là bắt buộc' })
   }
-  const category = await prisma.category.create({ data: { id, name, image } })
+  const category = await prisma.category.create({ data: { name, image } })
   res.status(201).json(category)
 })
 

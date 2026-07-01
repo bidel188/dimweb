@@ -124,12 +124,6 @@ function CategoryModal({ mode, data, onSave, onClose }) {
           {mode === 'create' ? 'Thêm danh mục' : 'Chỉnh sửa danh mục'}
         </h2>
         <div className="space-y-3">
-          {mode === 'create' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ID (slug) <span className="text-red-400">*</span></label>
-              <input value={form.id} onChange={set('id')} placeholder="sofa" className={input} />
-            </div>
-          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tên <span className="text-red-400">*</span></label>
             <input value={form.name} onChange={set('name')} className={input} />
