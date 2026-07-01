@@ -1,34 +1,35 @@
-import { useRef, useState } from 'react'
-import { Upload, X, Loader2 } from 'lucide-react'
+import { useRef } from 'react'
+import { Upload, X } from 'lucide-react'
 
-const CLOUD_NAME = 'dnmtragmg'
-const UPLOAD_PRESET = 'dim'
+// Gọi hàm này khi save form để upload file thật lên Cloudinary
+export async function uploadToCloudinary(file) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('upload_preset', 'dim_cloud_image')
+  const res = await fetch('https://api.cloudinary.com/v1_1/dnmtragmg/image/upload', {
+    method: 'POST',
+    body: form,
+  })
+  const data = await res.json()
+  if (!data.secure_url) throw new Error(data.error?.message || 'Upload thất bại')
+  return data.secure_url
+}
 
+// onChange(previewUrl, file) — previewUrl là blob URL để hiện preview,
+// file là File object để upload sau. Nếu xóa ảnh: onChange('', null)
 export default function ImageUpload({ value, onChange, label = 'Ảnh' }) {
-  const [uploading, setUploading] = useState(false)
   const inputRef = useRef()
 
-  async function handleFile(e) {
+  function handleFile(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploading(true)
-    try {
-      const form = new FormData()
-      form.append('file', file)
-      form.append('upload_preset', UPLOAD_PRESET)
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: form,
-      })
-      const data = await res.json()
-      if (data.secure_url) onChange(data.secure_url)
-      else throw new Error('Upload thất bại')
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setUploading(false)
-      e.target.value = ''
-    }
+    const previewUrl = URL.createObjectURL(file)
+    onChange(previewUrl, file)
+    e.target.value = ''
+  }
+
+  function handleClear() {
+    onChange('', null)
   }
 
   return (
@@ -47,7 +48,7 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh' }) {
             </button>
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={handleClear}
               className="p-1.5 bg-white text-red-500 rounded-lg shadow"
             >
               <X size={13} />
@@ -58,29 +59,13 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh' }) {
         <button
           type="button"
           onClick={() => inputRef.current.click()}
-          disabled={uploading}
-          className="w-full h-36 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+          className="w-full h-36 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-gray-400 hover:text-gray-600 transition-colors"
         >
-          {uploading ? (
-            <>
-              <Loader2 size={20} className="animate-spin" />
-              <span className="text-xs">Đang upload...</span>
-            </>
-          ) : (
-            <>
-              <Upload size={20} />
-              <span className="text-xs">Bấm để chọn ảnh</span>
-            </>
-          )}
+          <Upload size={20} />
+          <span className="text-xs">Bấm để chọn ảnh</span>
         </button>
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFile}
-      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
   )
 }

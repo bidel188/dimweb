@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import ImageUpload from '../components/ImageUpload.jsx'
+import ImageUpload, { uploadToCloudinary } from '../components/ImageUpload.jsx'
 
 const EMPTY = { id: '', name: '', image: '' }
 
@@ -100,7 +100,22 @@ export default function Categories() {
 
 function CategoryModal({ mode, data, onSave, onClose }) {
   const [form, setForm] = useState(data)
+  const [imageFile, setImageFile] = useState(null)
+  const [saving, setSaving] = useState(false)
   const set = field => e => setForm(f => ({ ...f, [field]: e.target.value }))
+
+  async function handleSaveClick() {
+    setSaving(true)
+    try {
+      let image = form.image
+      if (imageFile) image = await uploadToCloudinary(imageFile)
+      await onSave({ ...form, image })
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -122,13 +137,16 @@ function CategoryModal({ mode, data, onSave, onClose }) {
           <ImageUpload
             label="Ảnh danh mục *"
             value={form.image}
-            onChange={url => setForm(f => ({ ...f, image: url }))}
+            onChange={(previewUrl, file) => {
+              setForm(f => ({ ...f, image: previewUrl }))
+              setImageFile(file)
+            }}
           />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Hủy</button>
-          <button onClick={() => onSave(form)} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
-            {mode === 'create' ? 'Thêm' : 'Lưu'}
+          <button onClick={handleSaveClick} disabled={saving} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50">
+            {saving ? 'Đang lưu...' : mode === 'create' ? 'Thêm' : 'Lưu'}
           </button>
         </div>
       </div>

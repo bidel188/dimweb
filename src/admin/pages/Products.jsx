@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, Star, Sparkles, Search } from 'lucide-react'
-import ImageUpload from '../components/ImageUpload.jsx'
+import ImageUpload, { uploadToCloudinary } from '../components/ImageUpload.jsx'
 
 const EMPTY = {
   id: '', name: '', categoryId: '', material: '',
@@ -186,7 +186,24 @@ export default function Products() {
 
 function ProductModal({ mode, data, categories, onSave, onClose }) {
   const [form, setForm] = useState(data)
+  const [files, setFiles] = useState({ image: null, imageHover: null })
+  const [saving, setSaving] = useState(false)
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
+
+  async function handleSaveClick() {
+    setSaving(true)
+    try {
+      let image = form.image
+      let imageHover = form.imageHover
+      if (files.image) image = await uploadToCloudinary(files.image)
+      if (files.imageHover) imageHover = await uploadToCloudinary(files.imageHover)
+      await onSave({ ...form, image, imageHover })
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -229,12 +246,18 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
             <ImageUpload
               label="Ảnh chính *"
               value={form.image}
-              onChange={url => setForm(f => ({ ...f, image: url }))}
+              onChange={(previewUrl, file) => {
+                setForm(f => ({ ...f, image: previewUrl }))
+                setFiles(fs => ({ ...fs, image: file }))
+              }}
             />
             <ImageUpload
               label="Ảnh hover"
               value={form.imageHover}
-              onChange={url => setForm(f => ({ ...f, imageHover: url }))}
+              onChange={(previewUrl, file) => {
+                setForm(f => ({ ...f, imageHover: previewUrl }))
+                setFiles(fs => ({ ...fs, imageHover: file }))
+              }}
             />
           </div>
           <div className="flex gap-4 pt-1">
@@ -250,8 +273,8 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Hủy</button>
-          <button onClick={() => onSave(form)} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
-            {mode === 'create' ? 'Thêm' : 'Lưu'}
+          <button onClick={handleSaveClick} disabled={saving} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50">
+            {saving ? 'Đang lưu...' : mode === 'create' ? 'Thêm' : 'Lưu'}
           </button>
         </div>
       </div>
