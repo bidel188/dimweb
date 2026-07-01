@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 const EMPTY = { id: '', name: '', image: '' }
 
@@ -118,13 +119,11 @@ function CategoryModal({ mode, data, onSave, onClose }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Tên <span className="text-red-400">*</span></label>
             <input value={form.name} onChange={set('name')} className={input} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh (URL) <span className="text-red-400">*</span></label>
-            <input value={form.image} onChange={set('image')} className={input} />
-            {form.image && (
-              <img src={form.image} alt="" className="mt-2 h-24 w-full object-cover rounded-lg bg-gray-100" />
-            )}
-          </div>
+          <ImageUpload
+            label="Ảnh danh mục *"
+            value={form.image}
+            onChange={url => setForm(f => ({ ...f, image: url }))}
+          />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Hủy</button>

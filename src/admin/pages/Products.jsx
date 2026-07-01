@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, Star, Sparkles, Search } from 'lucide-react'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 const EMPTY = {
   id: '', name: '', categoryId: '', material: '',
@@ -224,12 +225,18 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
               <input type="number" value={form.originalPrice} onChange={set('originalPrice')} placeholder="Để trống nếu không có" className={input} />
             </Field>
           </div>
-          <Field label="Ảnh chính (URL)" required>
-            <input value={form.image} onChange={set('image')} className={input} />
-          </Field>
-          <Field label="Ảnh hover (URL)">
-            <input value={form.imageHover} onChange={set('imageHover')} className={input} />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <ImageUpload
+              label="Ảnh chính *"
+              value={form.image}
+              onChange={url => setForm(f => ({ ...f, image: url }))}
+            />
+            <ImageUpload
+              label="Ảnh hover"
+              value={form.imageHover}
+              onChange={url => setForm(f => ({ ...f, imageHover: url }))}
+            />
+          </div>
           <div className="flex gap-4 pt-1">
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input type="checkbox" checked={form.bestseller} onChange={set('bestseller')} className="w-4 h-4 accent-gray-900" />

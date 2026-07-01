@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, X, Search, ChevronRight } from 'lucide-react'
+import ImageUpload from '../components/ImageUpload.jsx'
 
 export default function Sets() {
   const [sets, setSets] = useState([])
@@ -252,11 +253,11 @@ function SetModal({ mode, data, onSave, onClose }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
             <textarea value={form.description} onChange={set('description')} rows={2} className={input} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh cover (URL)</label>
-            <input value={form.image} onChange={set('image')} className={input} />
-            {form.image && <img src={form.image} alt="" className="mt-2 h-24 w-full object-cover rounded-lg bg-gray-100" />}
-          </div>
+          <ImageUpload
+            label="Ảnh cover"
+            value={form.image}
+            onChange={url => setForm(f => ({ ...f, image: url }))}
+          />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Hủy</button>
