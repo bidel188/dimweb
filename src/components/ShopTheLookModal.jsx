@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, X } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { formatPrice, getProductsByIds } from '../data/products'
+import { formatPrice } from '../data/products'
 import { BUY_URL } from '../data/site'
 
 export default function ShopTheLookModal() {
-  const { activeLook, setActiveLook, setQuickViewProduct } = useApp()
-  const products = activeLook ? getProductsByIds(activeLook.productIds) : []
+  const { products: allProducts, activeLook, setActiveLook, setQuickViewProduct } = useApp()
+  const products = activeLook
+    ? activeLook.productIds.map(id => allProducts.find(p => p.id === id)).filter(Boolean)
+    : []
 
   const openProduct = (product) => {
     setActiveLook(null)

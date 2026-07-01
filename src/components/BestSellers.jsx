@@ -3,11 +3,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Container from './Container'
 import SectionHeading from './SectionHeading'
 import ProductCard from './ProductCard'
-import { PRODUCTS } from '../data/products'
-
-const items = PRODUCTS.filter((p) => p.bestseller)
+import { useApp } from '../context/AppContext'
 
 export default function BestSellers() {
+  const { products } = useApp()
+  const items = products.filter((p) => p.bestseller)
   const scrollerRef = useRef(null)
 
   const scrollByAmount = (dir) => {

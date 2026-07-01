@@ -1,11 +1,12 @@
 import Container from './Container'
 import SectionHeading from './SectionHeading'
 import ProductCard from './ProductCard'
-import { PRODUCTS } from '../data/products'
-
-const items = PRODUCTS.filter((p) => p.newArrival)
+import { useApp } from '../context/AppContext'
 
 export default function NewArrivals() {
+  const { products } = useApp()
+  const items = products.filter((p) => p.newArrival)
+
   return (
     <section className="py-24 md:py-32 bg-bone">
       <Container>

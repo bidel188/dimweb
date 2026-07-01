@@ -2,8 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 const AppContext = createContext(null)
 const STORAGE_KEY = 'luxe_wishlist'
+const API = 'http://localhost:4000/api'
 
 export function AppProvider({ children }) {
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [loadingData, setLoadingData] = useState(true)
+
   const [wishlist, setWishlist] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -15,6 +20,16 @@ export function AppProvider({ children }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
   const [activeLook, setActiveLook] = useState(null)
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/products`).then(r => r.json()),
+      fetch(`${API}/categories`).then(r => r.json()),
+    ]).then(([prods, cats]) => {
+      setProducts(prods)
+      setCategories(cats)
+    }).finally(() => setLoadingData(false))
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlist))
@@ -29,6 +44,9 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider
       value={{
+        products,
+        categories,
+        loadingData,
         wishlist,
         toggleWishlist,
         isWishlisted,

@@ -2,7 +2,6 @@ import { Mail, MapPin, Phone } from 'lucide-react'
 import Container from './Container'
 import { FacebookIcon, InstagramIcon } from './SocialIcons'
 import { SITE } from '../data/site'
-import { CATEGORIES } from '../data/products'
 import { useApp } from '../context/AppContext'
 
 const HELP_LINKS = [
@@ -12,8 +11,8 @@ const HELP_LINKS = [
 ]
 
 export default function Footer() {
-  const { setActiveCategory } = useApp()
-  const shopLinks = CATEGORIES.map((cat) => ({
+  const { categories, setActiveCategory } = useApp()
+  const shopLinks = categories.map((cat) => ({
     label: cat.name,
     href: '#products',
     onClick: () => setActiveCategory(cat.id),

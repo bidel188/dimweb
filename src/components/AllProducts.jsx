@@ -2,15 +2,13 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Container from './Container'
 import SectionHeading from './SectionHeading'
 import ProductCard from './ProductCard'
-import { CATEGORIES, PRODUCTS } from '../data/products'
 import { useApp } from '../context/AppContext'
 
-const FILTERS = [{ id: 'all', name: 'Tất cả' }, ...CATEGORIES.map(({ id, name }) => ({ id, name }))]
-
 export default function AllProducts() {
-  const { activeCategory, setActiveCategory } = useApp()
-  const items =
-    activeCategory === 'all' ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCategory)
+  const { products, categories, activeCategory, setActiveCategory } = useApp()
+
+  const filters = [{ id: 'all', name: 'Tất cả' }, ...categories.map(({ id, name }) => ({ id, name }))]
+  const items = activeCategory === 'all' ? products : products.filter((p) => p.categoryId === activeCategory)
 
   return (
     <section id="products" className="py-24 md:py-32 bg-bone">
@@ -18,7 +16,7 @@ export default function AllProducts() {
         <SectionHeading eyebrow="Toàn bộ sản phẩm" title="Khám phá danh mục nội thất" align="center" />
 
         <div className="flex flex-wrap items-center justify-center gap-3 mb-14">
-          {FILTERS.map((f) => (
+          {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setActiveCategory(f.id)}

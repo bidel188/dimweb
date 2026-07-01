@@ -2,18 +2,17 @@ import { motion } from 'framer-motion'
 import Container from './Container'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
-import { CATEGORIES } from '../data/products'
 import { useApp } from '../context/AppContext'
 
 export default function Categories() {
-  const { setActiveCategory } = useApp()
+  const { categories, setActiveCategory } = useApp()
 
   return (
     <section className="py-24 md:py-32">
       <Container>
         <SectionHeading eyebrow="Danh mục" title="Mua sắm theo không gian" align="center" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
-          {CATEGORIES.map((cat, i) => (
+          {categories.map((cat, i) => (
             <motion.a
               key={cat.id}
               href="#products"
