@@ -20,7 +20,7 @@ model Category {
 }
 
 model Product {
-  id            String      @id
+  id            String      @id @default(cuid())
   name          String
   categoryId    String
   category      Category    @relation(fields: [categoryId], references: [id])

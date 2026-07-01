@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, Star, Sparkles, Search } from 'lucide-react'
 import ImageUpload, { uploadToCloudinary } from '../components/ImageUpload.jsx'
 
 const EMPTY = {
-  id: '', name: '', categoryId: '', material: '',
+  name: '', categoryId: '', material: '',
   price: '', originalPrice: '', badge: '',
   image: '', imageHover: '', bestseller: false, newArrival: false,
 }
@@ -212,11 +212,6 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
           {mode === 'create' ? 'Thêm sản phẩm' : 'Chỉnh sửa sản phẩm'}
         </h2>
         <div className="space-y-3">
-          {mode === 'create' && (
-            <Field label="ID (slug)" required>
-              <input value={form.id} onChange={set('id')} placeholder="sofa-velvet-aurora" className={input} />
-            </Field>
-          )}
           <Field label="Tên sản phẩm" required>
             <input value={form.name} onChange={set('name')} className={input} />
           </Field>

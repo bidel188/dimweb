@@ -29,17 +29,17 @@ productsRouter.get('/:id', async (req, res) => {
 
 productsRouter.post('/', async (req, res) => {
   const {
-    id, name, categoryId, material, price, originalPrice,
+    name, categoryId, material, price, originalPrice,
     rating, ratingCount, badge, image, imageHover, bestseller, newArrival,
   } = req.body
 
-  if (!id || !name || !categoryId || !material || price == null || !image) {
-    return res.status(400).json({ error: 'id, name, categoryId, material, price, image là bắt buộc' })
+  if (!name || !categoryId || !material || price == null || !image) {
+    return res.status(400).json({ error: 'name, categoryId, material, price, image là bắt buộc' })
   }
 
   const product = await prisma.product.create({
     data: {
-      id, name, categoryId, material, price, originalPrice,
+      name, categoryId, material, price, originalPrice,
       rating, ratingCount, badge, image, imageHover,
       bestseller: !!bestseller, newArrival: !!newArrival,
     },
