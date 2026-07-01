@@ -28,17 +28,19 @@ export default function ProductCard({ product }) {
         </button>
 
         <img
-          src={product.image}
+          src={product.images?.[0]?.url || product.image}
           alt={product.name}
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 group-hover:opacity-0"
         />
-        <img
-          src={product.imageHover}
-          alt=""
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        />
+        {(product.images?.[1]?.url) && (
+          <img
+            src={product.images[1].url}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          />
+        )}
 
         <button
           onClick={() => setQuickViewProduct(product)}

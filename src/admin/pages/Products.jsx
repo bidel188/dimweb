@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, Star, Sparkles, Search } from 'lucide-react'
-import ImageUpload, { uploadToCloudinary } from '../components/ImageUpload.jsx'
+import { uploadToCloudinary } from '../components/ImageUpload.jsx'
+import MultiImageUpload from '../components/MultiImageUpload.jsx'
 
 const EMPTY = {
   name: '', categoryId: '', material: '',
   price: '', originalPrice: '', badge: '',
-  image: '', imageHover: '', bestseller: false, newArrival: false,
+  bestseller: false, newArrival: false,
 }
 
 export default function Products() {
@@ -15,7 +16,7 @@ export default function Products() {
   const [categories, setCategories] = useState([])
   const [search, setSearch] = useState('')
   const [filterCat, setFilterCat] = useState('')
-  const [modal, setModal] = useState(null) // null | { mode: 'create'|'edit', data }
+  const [modal, setModal] = useState(null)
 
   useEffect(() => {
     load()
@@ -35,7 +36,7 @@ export default function Products() {
 
   async function handleToggle(product, field) {
     try {
-      const updated = await api.updateProduct(product.id, { ...product, [field]: !product[field] })
+      const updated = await api.updateProduct(product.id, { [field]: !product[field] })
       setProducts(ps => ps.map(p => p.id === updated.id ? updated : p))
     } catch (err) {
       toast.error(err.message)
@@ -53,19 +54,20 @@ export default function Products() {
     }
   }
 
-  async function handleSave(form) {
+  async function handleSave(formData, imageUrls) {
     try {
       const data = {
-        ...form,
-        price: Number(form.price),
-        originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
+        ...formData,
+        price: Number(formData.price),
+        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+        images: imageUrls,
       }
       if (modal.mode === 'create') {
         const created = await api.createProduct(data)
         setProducts(ps => [created, ...ps])
         toast.success('Đã thêm sản phẩm')
       } else {
-        const updated = await api.updateProduct(form.id, data)
+        const updated = await api.updateProduct(modal.data.id, data)
         setProducts(ps => ps.map(p => p.id === updated.id ? updated : p))
         toast.success('Đã cập nhật')
       }
@@ -75,19 +77,22 @@ export default function Products() {
     }
   }
 
+  function getThumb(p) {
+    return p.images?.[0]?.url || p.image
+  }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-gray-900">Sản phẩm</h1>
         <button
-          onClick={() => setModal({ mode: 'create', data: { ...EMPTY } })}
+          onClick={() => setModal({ mode: 'create', data: { ...EMPTY }, existingImageUrls: [] })}
           className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800"
         >
           <Plus size={15} /> Thêm sản phẩm
         </button>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -108,7 +113,6 @@ export default function Products() {
         </select>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -116,6 +120,7 @@ export default function Products() {
               <th className="px-5 py-3 text-left">Sản phẩm</th>
               <th className="px-5 py-3 text-left">Danh mục</th>
               <th className="px-5 py-3 text-right">Giá</th>
+              <th className="px-5 py-3 text-center">Ảnh</th>
               <th className="px-5 py-3 text-center">Bán chạy</th>
               <th className="px-5 py-3 text-center">Mới</th>
               <th className="px-5 py-3 text-left">Badge</th>
@@ -127,13 +132,16 @@ export default function Products() {
               <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
-                    <img src={p.image} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-gray-100" />
+                    <img src={getThumb(p)} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-gray-100" />
                     <span className="font-medium text-gray-900">{p.name}</span>
                   </div>
                 </td>
                 <td className="px-5 py-3 text-gray-500">{p.categoryId}</td>
                 <td className="px-5 py-3 text-right text-gray-700">
                   {p.price.toLocaleString('vi-VN')}₫
+                </td>
+                <td className="px-5 py-3 text-center text-gray-400 text-xs">
+                  {(p.images?.length || 0)} ảnh
                 </td>
                 <td className="px-5 py-3 text-center">
                   <button onClick={() => handleToggle(p, 'bestseller')}
@@ -152,7 +160,14 @@ export default function Products() {
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2 justify-end">
-                    <button onClick={() => setModal({ mode: 'edit', data: { ...p, originalPrice: p.originalPrice ?? '' } })}
+                    <button
+                      onClick={() => setModal({
+                        mode: 'edit',
+                        data: { ...p, originalPrice: p.originalPrice ?? '', badge: p.badge ?? '' },
+                        existingImageUrls: p.images?.length
+                          ? p.images.map(i => i.url)
+                          : [p.image].filter(Boolean),
+                      })}
                       className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
                       <Pencil size={14} />
                     </button>
@@ -165,7 +180,7 @@ export default function Products() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-5 py-10 text-center text-gray-400 text-sm">Không có sản phẩm</td></tr>
+              <tr><td colSpan={8} className="px-5 py-10 text-center text-gray-400 text-sm">Không có sản phẩm</td></tr>
             )}
           </tbody>
         </table>
@@ -175,6 +190,7 @@ export default function Products() {
         <ProductModal
           mode={modal.mode}
           data={modal.data}
+          existingImageUrls={modal.existingImageUrls}
           categories={categories}
           onSave={handleSave}
           onClose={() => setModal(null)}
@@ -184,20 +200,32 @@ export default function Products() {
   )
 }
 
-function ProductModal({ mode, data, categories, onSave, onClose }) {
+function ProductModal({ mode, data, existingImageUrls, categories, onSave, onClose }) {
   const [form, setForm] = useState(data)
-  const [files, setFiles] = useState({ image: null, imageHover: null })
+  // urls = preview URLs (blob hoặc Cloudinary), files = File[] tương ứng (null = đã có URL thật)
+  const [imageUrls, setImageUrls] = useState(existingImageUrls)
+  const [imageFiles, setImageFiles] = useState(existingImageUrls.map(() => null))
   const [saving, setSaving] = useState(false)
-  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
+
+  const set = field => e => setForm(f => ({
+    ...f,
+    [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
+  }))
 
   async function handleSaveClick() {
+    if (imageUrls.length === 0) {
+      toast.error('Cần ít nhất 1 ảnh')
+      return
+    }
     setSaving(true)
     try {
-      let image = form.image
-      let imageHover = form.imageHover
-      if (files.image) image = await uploadToCloudinary(files.image)
-      if (files.imageHover) imageHover = await uploadToCloudinary(files.imageHover)
-      await onSave({ ...form, image, imageHover })
+      // Upload các file mới, giữ nguyên URL cũ
+      const finalUrls = await Promise.all(
+        imageUrls.map((url, i) =>
+          imageFiles[i] ? uploadToCloudinary(imageFiles[i]) : Promise.resolve(url)
+        )
+      )
+      await onSave(form, finalUrls)
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -211,7 +239,12 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
         <h2 className="text-lg font-semibold text-gray-900 mb-5">
           {mode === 'create' ? 'Thêm sản phẩm' : 'Chỉnh sửa sản phẩm'}
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <MultiImageUpload
+            urls={imageUrls}
+            files={imageFiles}
+            onChange={(urls, files) => { setImageUrls(urls); setImageFiles(files) }}
+          />
           <Field label="Tên sản phẩm" required>
             <input value={form.name} onChange={set('name')} className={input} />
           </Field>
@@ -237,25 +270,7 @@ function ProductModal({ mode, data, categories, onSave, onClose }) {
               <input type="number" value={form.originalPrice} onChange={set('originalPrice')} placeholder="Để trống nếu không có" className={input} />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <ImageUpload
-              label="Ảnh chính *"
-              value={form.image}
-              onChange={(previewUrl, file) => {
-                setForm(f => ({ ...f, image: previewUrl }))
-                setFiles(fs => ({ ...fs, image: file }))
-              }}
-            />
-            <ImageUpload
-              label="Ảnh hover"
-              value={form.imageHover}
-              onChange={(previewUrl, file) => {
-                setForm(f => ({ ...f, imageHover: previewUrl }))
-                setFiles(fs => ({ ...fs, imageHover: file }))
-              }}
-            />
-          </div>
-          <div className="flex gap-4 pt-1">
+          <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input type="checkbox" checked={form.bestseller} onChange={set('bestseller')} className="w-4 h-4 accent-gray-900" />
               Bán chạy

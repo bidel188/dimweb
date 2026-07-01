@@ -27,8 +27,8 @@ export const api = {
   // Products
   getProducts: (params = {}) => req('GET', '/products?' + new URLSearchParams(params)),
   getProduct: (id) => req('GET', `/products/${id}`),
-  createProduct: (data) => req('POST', '/products', data),
-  updateProduct: (id, data) => req('PUT', `/products/${id}`, data),
+  createProduct: (data) => req('POST', '/products', data),   // data.images = string[]
+  updateProduct: (id, data) => req('PUT', `/products/${id}`, data), // data.images = string[] | undefined
   deleteProduct: (id) => req('DELETE', `/products/${id}`),
 
   // Categories

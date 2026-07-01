@@ -190,21 +190,26 @@ async function main() {
   }
 
   for (const p of PRODUCTS) {
+    const imgs = [p.image, p.imageHover].filter(Boolean)
+    const base = {
+      name: p.name, categoryId: p.category, material: p.material,
+      price: p.price, originalPrice: p.originalPrice ?? null,
+      rating: p.rating ?? 0, ratingCount: p.ratingCount ?? 0,
+      badge: p.badge ?? null, image: p.image,
+      bestseller: !!p.bestseller, newArrival: !!p.newArrival,
+    }
     await prisma.product.upsert({
       where: { id: p.id },
       update: {
-        name: p.name, categoryId: p.category, material: p.material,
-        price: p.price, originalPrice: p.originalPrice ?? null,
-        rating: p.rating ?? 0, ratingCount: p.ratingCount ?? 0,
-        badge: p.badge ?? null, image: p.image, imageHover: p.imageHover ?? null,
-        bestseller: !!p.bestseller, newArrival: !!p.newArrival,
+        ...base,
+        images: {
+          deleteMany: {},
+          create: imgs.map((url, order) => ({ url, order })),
+        },
       },
       create: {
-        id: p.id, name: p.name, categoryId: p.category, material: p.material,
-        price: p.price, originalPrice: p.originalPrice ?? null,
-        rating: p.rating ?? 0, ratingCount: p.ratingCount ?? 0,
-        badge: p.badge ?? null, image: p.image, imageHover: p.imageHover ?? null,
-        bestseller: !!p.bestseller, newArrival: !!p.newArrival,
+        id: p.id, ...base,
+        images: { create: imgs.map((url, order) => ({ url, order })) },
       },
     })
   }

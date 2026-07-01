@@ -1,17 +1,32 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Star, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Star, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { formatPrice } from '../data/products'
 import { BUY_URL } from '../data/site'
 
 export default function QuickViewModal() {
   const { quickViewProduct, setQuickViewProduct } = useApp()
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  useEffect(() => {
+    if (quickViewProduct) setActiveIdx(0)
+  }, [quickViewProduct?.id])
+
+  if (!quickViewProduct) return null
+
+  const imgs = quickViewProduct.images?.length
+    ? quickViewProduct.images.map(i => i.url)
+    : [quickViewProduct.image].filter(Boolean)
+
+  const prev = () => setActiveIdx(i => (i - 1 + imgs.length) % imgs.length)
+  const next = () => setActiveIdx(i => (i + 1) % imgs.length)
 
   return (
     <AnimatePresence>
       {quickViewProduct && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -35,12 +50,47 @@ export default function QuickViewModal() {
               <X size={18} />
             </button>
 
-            <div className="aspect-square md:aspect-auto bg-bone-2">
-              <img
-                src={quickViewProduct.image}
-                alt={quickViewProduct.name}
-                className="w-full h-full object-cover"
-              />
+            {/* Image gallery */}
+            <div className="flex flex-col gap-2 bg-bone-2 p-2">
+              <div className="relative aspect-square overflow-hidden">
+                <img
+                  key={activeIdx}
+                  src={imgs[activeIdx]}
+                  alt={quickViewProduct.name}
+                  className="w-full h-full object-cover"
+                />
+                {imgs.length > 1 && (
+                  <>
+                    <button
+                      onClick={prev}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      onClick={next}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </>
+                )}
+              </div>
+              {imgs.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {imgs.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveIdx(i)}
+                      className={`flex-none w-14 h-14 rounded overflow-hidden border-2 transition-colors ${
+                        i === activeIdx ? 'border-ink' : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="p-8 md:p-10 flex flex-col">
