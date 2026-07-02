@@ -9,7 +9,8 @@ import { requireAuth } from './routes/auth.js'
 
 const app = express()
 
-app.use(cors())
+const corsOrigin = process.env.CORS_ORIGIN
+app.use(cors({ origin: corsOrigin ? corsOrigin.split(',') : true }))
 app.use(express.json())
 
 app.get('/health', (req, res) => res.json({ ok: true }))

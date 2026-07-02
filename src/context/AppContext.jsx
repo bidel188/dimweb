@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 const AppContext = createContext(null)
 const STORAGE_KEY = 'luxe_wishlist'
-const API = 'http://localhost:4000/api'
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:4000') + '/api'
 
 export function AppProvider({ children }) {
   const [products, setProducts] = useState([])
@@ -22,9 +22,10 @@ export function AppProvider({ children }) {
   const [activeLook, setActiveLook] = useState(null)
 
   useEffect(() => {
+    const opts = { headers: { 'ngrok-skip-browser-warning': 'true' } }
     Promise.all([
-      fetch(`${API}/products`).then(r => r.json()),
-      fetch(`${API}/categories`).then(r => r.json()),
+      fetch(`${API}/products`, opts).then(r => r.json()),
+      fetch(`${API}/categories`, opts).then(r => r.json()),
     ]).then(([prods, cats]) => {
       setProducts(prods)
       setCategories(cats)

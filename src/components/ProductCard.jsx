@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Eye, Heart, Star } from 'lucide-react'
 import { formatPrice } from '../data/products'
 import { useApp } from '../context/AppContext'
@@ -27,20 +28,22 @@ export default function ProductCard({ product }) {
           <Heart size={16} className={wishlisted ? 'fill-terracotta text-terracotta' : 'text-ink'} />
         </button>
 
-        <img
-          src={product.images?.[0]?.url || product.image}
-          alt={product.name}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 group-hover:opacity-0"
-        />
-        {(product.images?.[1]?.url) && (
+        <Link to={`/products/${product.id}`} className="absolute inset-0">
           <img
-            src={product.images[1].url}
-            alt=""
+            src={product.images?.[0]?.url || product.image}
+            alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 group-hover:opacity-0"
           />
-        )}
+          {(product.images?.[1]?.url) && (
+            <img
+              src={product.images[1].url}
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            />
+          )}
+        </Link>
 
         <button
           onClick={() => setQuickViewProduct(product)}
@@ -61,7 +64,9 @@ export default function ProductCard({ product }) {
         <span className="text-xs text-stone ml-1">({product.ratingCount})</span>
       </div>
 
-      <h3 className="text-sm md:text-base text-ink mb-1.5">{product.name}</h3>
+      <Link to={`/products/${product.id}`}>
+        <h3 className="text-sm md:text-base text-ink mb-1.5 hover:text-bronze transition-colors">{product.name}</h3>
+      </Link>
 
       <div className="flex items-center gap-2">
         <span className="text-ink font-medium">{formatPrice(product.price)}</span>

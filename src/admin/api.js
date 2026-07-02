@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:4000/api'
+const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:4000') + '/api'
 
 function getToken() {
   return localStorage.getItem('dim_admin_token')
@@ -9,6 +9,7 @@ async function req(method, path, body) {
     method,
     headers: {
       'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
       ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
     },
     ...(body != null ? { body: JSON.stringify(body) } : {}),

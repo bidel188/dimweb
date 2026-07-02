@@ -32,6 +32,45 @@ productsRouter.get('/:id', async (req, res) => {
   res.json(product)
 })
 
+productsRouter.get('/:id/related', async (req, res) => {
+  const product = await prisma.product.findUnique({ where: { id: req.params.id } })
+  if (!product) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' })
+
+  const LIMIT = 8
+
+  const setLinks = await prisma.setProduct.findMany({
+    where: { productId: product.id },
+    select: { setId: true },
+  })
+  const setIds = setLinks.map((s) => s.setId)
+
+  const [bySet, byCategory, byName] = await Promise.all([
+    setIds.length
+      ? prisma.product.findMany({
+          where: { id: { not: product.id }, setProducts: { some: { setId: { in: setIds } } } },
+          include: includeImages,
+          take: LIMIT,
+        })
+      : Promise.resolve([]),
+    prisma.product.findMany({
+      where: { id: { not: product.id }, categoryId: product.categoryId },
+      include: includeImages,
+      orderBy: { createdAt: 'desc' },
+      take: LIMIT,
+    }),
+    prisma.product.findMany({
+      where: {
+        id: { not: product.id },
+        name: { contains: product.name.split(' ').slice(0, 2).join(' '), mode: 'insensitive' },
+      },
+      include: includeImages,
+      take: LIMIT,
+    }),
+  ])
+
+  res.json({ bySet, byCategory, byName })
+})
+
 productsRouter.post('/', async (req, res) => {
   const {
     name, categoryId, material, price, originalPrice,
